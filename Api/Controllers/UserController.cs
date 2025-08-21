@@ -1,4 +1,4 @@
-﻿using BLL.Services;
+﻿using BLL.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -6,8 +6,8 @@ namespace Api.Controllers
     [ApiController, Route("[controller]")]
     public class UserController
     {
-        private readonly UserService _service;
-        public UserController(UserService service)
+        private readonly IUserService _service;
+        public UserController(IUserService service)
         {
             _service = service;
         }

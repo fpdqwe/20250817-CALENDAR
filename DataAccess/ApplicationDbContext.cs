@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using DataAccess.Configurations;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
@@ -11,6 +12,12 @@ namespace DataAccess
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
             Database.EnsureCreated();
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new EventConfiguration());
+            modelBuilder.ApplyConfiguration(new EventParticipantConfiguration());
         }
     }
 }
