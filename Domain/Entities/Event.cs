@@ -7,7 +7,7 @@ namespace Domain.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public DateTime Time { get; set; }
-        public TimeSpan Duration { get; set; }
+        public int Duration { get; set; } // Duration in 15min intervals
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? Color { get; set; }

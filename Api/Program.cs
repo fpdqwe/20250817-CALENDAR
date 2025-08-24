@@ -1,3 +1,4 @@
+using Api.Extensions;
 using BLL;
 using BLL.Abstractions;
 using BLL.Services;
@@ -14,8 +15,9 @@ namespace Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Configuration.AddJsonFile("Properties/secrets.json");
+            var config = builder.Configuration;
             var services = builder.Services;
+            config.AddJsonFile("Properties/secrets.json");
 
             services.AddLogging();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
@@ -24,9 +26,11 @@ namespace Api
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
-            services.Configure<DbContextOptions>(builder.Configuration.GetSection(nameof(DbContextOptions)));
+            services.Configure<JwtOptions>(config.GetSection(nameof(JwtOptions)));
+            services.Configure<DbContextOptions>(config.GetSection(nameof(DbContextOptions)));
 
+            var jwtOptions = config.GetRequiredSection(nameof(JwtOptions)).Get<JwtOptions>();
+            services.AddApiAuthentication(jwtOptions);
             services.AddSingleton<IContextManager, ContextManager>();
             services.AddTransient<IUserRepository<User>, UserRepository>();
             services.AddTransient<IRepository<Event>, EventRepository>();
@@ -46,6 +50,13 @@ namespace Api
             }
 
             app.UseHttpsRedirection();
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Strict,
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
+                Secure = CookieSecurePolicy.Always
+            });
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 

@@ -59,7 +59,7 @@ namespace BLL.Services
                 callback.SetErrorMessage("Entity was null");
                 return callback;
             }
-            var result = await _repository.Update(entity);
+            var result = await _repository.Add(entity);
             callback.AddObject(result);
             return callback;
         }

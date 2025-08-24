@@ -9,7 +9,7 @@ namespace DataAccess.Repositories
         public EventParticipantRepository(IContextManager contextManager,
             ILogger<EventParticipantRepository> logger) : base(contextManager, logger)
         {
-
+            _logger.LogDebug($"New instance of {GetType().Name} was initialized");
         }
     }
 }

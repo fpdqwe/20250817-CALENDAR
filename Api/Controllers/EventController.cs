@@ -1,13 +1,14 @@
 ﻿using BLL.Abstractions;
 using BLL.Dto;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Api.Controllers
 {
-    [ApiController, Route("api/v1/events")]
-    public class EventController
+    [ApiController, Route("api/v1/events"), Authorize]
+    public class EventController : ControllerBase
     {
         private readonly IEventService _service;
         private readonly ILogger _logger;
@@ -28,10 +29,10 @@ namespace Api.Controllers
             return new ActionResult<CallbackDto<Event>>(result);
         }
         [HttpPost("add")]
-        public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] Event entity)
+        public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] CreateEventDto dto)
         {
             var sw = Stopwatch.StartNew();
-            var result = await _service.Add(entity);
+            var result = await _service.Add(dto.ToEntity());
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
             _logger.LogInformation($"EventController handled \"Add()\" in {sw.ElapsedMilliseconds}");

@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Api.Controllers
 {
     [ApiController, Route("api/v1/users")]
-    public class UserController
+    public class UserController : ControllerBase
     {
         private readonly IUserService _service;
         private readonly ILogger _logger;
@@ -37,12 +37,13 @@ namespace Api.Controllers
             _logger.LogInformation($"UserController handled \"Get()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<FullUserDto>>(result);
         }
-        [HttpGet("auth")]
+        [HttpPost("auth")]
         public async Task<ActionResult<CallbackDto<string>>> Auth([FromBody] UserDto dto)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.AuthUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
+            Response.Cookies.Append("jwt", result.Value);
             sw.Stop();
             _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<string>>(result);

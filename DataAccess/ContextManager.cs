@@ -23,6 +23,7 @@ namespace DataAccess
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseNpgsql(_connectionString)
                 .EnableSensitiveDataLogging(_useSensitiveDataLogging)
+                .EnableDetailedErrors(true)
                 .LogTo(Console.WriteLine)
                 .Options;
             _logger.LogDebug("new ApplicationDbContext class instance was initialized");

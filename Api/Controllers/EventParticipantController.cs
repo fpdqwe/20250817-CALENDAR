@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Api.Controllers
 {
     [ApiController, Route("api/v1/participants")]
-    public class EventParticipantController
+    public class EventParticipantController : ControllerBase
     {
         private readonly IEventParticipantService _service;
         private readonly ILogger _logger;
