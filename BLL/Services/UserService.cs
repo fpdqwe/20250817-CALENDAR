@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BLL.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository<User> _repository;
         private readonly ILogger _logger;
@@ -14,13 +14,19 @@ namespace BLL.Services
         private readonly ITokenProvider _tokenProvider;
         public UserService(IUserRepository<User> repository, IHasher hasher, ITokenProvider tokenProvider, ILogger logger)
         {
+            ArgumentNullException.ThrowIfNull(repository, nameof(repository));
+            ArgumentNullException.ThrowIfNull(hasher, nameof(hasher));
+            ArgumentNullException.ThrowIfNull(tokenProvider, nameof(tokenProvider));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
             _repository = repository;
             _hasher = hasher;
             _tokenProvider = tokenProvider;
             _logger = logger;
+            _logger.LogDebug($"New instance of {nameof(EventService)} was initialized");
         }
         public async Task<CallbackDto<bool>> AddUser(UserDto dto)
         {
+            _logger.LogDebug($"Trying to add new user");
             var entity = dto.ToEntity();
             entity.Password = _hasher.Hash(dto.Password);
             var result = new CallbackDto<bool>();
@@ -31,7 +37,7 @@ namespace BLL.Services
         }
         public async Task<CallbackDto<string>> AuthUser(UserDto dto)
         {
-            _logger.LogDebug("Trying to auth user");
+            _logger.LogDebug($"Trying to auth user {dto.Login}");
             var callback = new CallbackDto<string>();
             var password = await _repository.GetPasswordByLogin(dto.Login);
             if (password != null)

@@ -19,6 +19,7 @@ namespace DataAccess.Configurations
             builder.Property(x => x.Ico).IsRequired(false);
             builder.Property(x => x.IterationTime).IsRequired(true)
                 .HasDefaultValue(IterationTime.Single);
+            builder.HasMany(x => x.Participants).WithOne(x => x.Event);
         }
     }
 }
