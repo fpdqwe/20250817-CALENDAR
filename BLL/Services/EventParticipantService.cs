@@ -11,7 +11,7 @@ namespace BLL.Services
         private readonly IRepository<EventParticipant> _repository;
         private readonly ILogger _logger;
         public EventParticipantService(IRepository<EventParticipant> repository,
-            ILogger logger)
+            ILogger<EventParticipantService> logger)
         {
             ArgumentNullException.ThrowIfNull(repository, nameof(repository));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));

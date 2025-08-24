@@ -6,9 +6,10 @@ namespace DataAccess.Repositories
 {
     public class EventParticipantRepository : BaseRepository<EventParticipant>
     {
-        public EventParticipantRepository(IContextManager contextManager, ILogger logger) : base(contextManager, logger)
+        public EventParticipantRepository(IContextManager contextManager,
+            ILogger<EventParticipantRepository> logger) : base(contextManager, logger)
         {
-            
+
         }
     }
 }

@@ -12,7 +12,8 @@ namespace BLL.Services
         private readonly ILogger _logger;
         private readonly IHasher _hasher;
         private readonly ITokenProvider _tokenProvider;
-        public UserService(IUserRepository<User> repository, IHasher hasher, ITokenProvider tokenProvider, ILogger logger)
+        public UserService(IUserRepository<User> repository, IHasher hasher, ITokenProvider tokenProvider,
+            ILogger<UserService> logger)
         {
             ArgumentNullException.ThrowIfNull(repository, nameof(repository));
             ArgumentNullException.ThrowIfNull(hasher, nameof(hasher));

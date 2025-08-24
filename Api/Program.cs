@@ -4,6 +4,8 @@ using BLL.Services;
 using BLL.Utilities;
 using DataAccess;
 using DataAccess.Abstractions;
+using DataAccess.Repositories;
+using Domain.Entities;
 
 namespace Api
 {
@@ -12,25 +14,31 @@ namespace Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Configuration.AddJsonFile("secrets.json");
+            builder.Configuration.AddJsonFile("Properties/secrets.json");
             var services = builder.Services;
-            // Add services to the container.
+
+            services.AddLogging();
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
 
             services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.Configure<JwtOptions>(builder.Configuration);
-            services.Configure<DbContextOptions>(builder.Configuration);
+            services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
+            services.Configure<DbContextOptions>(builder.Configuration.GetSection(nameof(DbContextOptions)));
+
             services.AddSingleton<IContextManager, ContextManager>();
+            services.AddTransient<IUserRepository<User>, UserRepository>();
+            services.AddTransient<IRepository<Event>, EventRepository>();
+            services.AddTransient<IRepository<EventParticipant>, EventParticipantRepository>();
             services.AddSingleton<ITokenProvider, JwtTokenProvider>();
             services.AddSingleton<IHasher, BCryptHasher>();
             services.AddSingleton<IUserService, UserService>();
+            services.AddSingleton<IEventService, EventService>();
+            services.AddSingleton<IEventParticipantService, EventParticipantService>();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -38,10 +46,7 @@ namespace Api
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();

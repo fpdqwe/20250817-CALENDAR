@@ -9,10 +9,11 @@ namespace DataAccess.Repositories
     {
         private readonly IContextManager _contextManager;
         private readonly ILogger _logger;
-        public UserRepository(IContextManager contextManager, ILogger logger)
+        public UserRepository(IContextManager contextManager, ILogger<UserRepository> logger)
         {
             _contextManager = contextManager;
             _logger = logger;
+            _logger.LogDebug($"New instance of {GetType().Name} was initialized");
         }
 
         public IContextManager ContextManager => _contextManager;

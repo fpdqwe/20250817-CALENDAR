@@ -6,18 +6,19 @@ using System.Diagnostics;
 
 namespace Api.Controllers
 {
-    [ApiController, Route("[controller]")]
+    [ApiController, Route("api/v1/participants")]
     public class EventParticipantController
     {
         private readonly IEventParticipantService _service;
         private readonly ILogger _logger;
-        public EventParticipantController(IEventParticipantService service, ILogger logger)
+        public EventParticipantController(IEventParticipantService service,
+            ILogger<EventParticipantController> logger)
         {
             _service = service;
             _logger = logger;
             _logger.LogDebug($"New instance of {GetType().Name} was initialized");
         }
-        [HttpGet]
+        [HttpGet("{id}")]
         public async Task<ActionResult<CallbackDto<EventParticipant>>> Get(Guid id)
         {
             var sw = Stopwatch.StartNew();
@@ -27,7 +28,7 @@ namespace Api.Controllers
             _logger.LogInformation($"EventParticipantController handled \"Get()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<EventParticipant>>(result);
         }
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] EventParticipant participant)
         {
             var sw = Stopwatch.StartNew();
@@ -37,7 +38,7 @@ namespace Api.Controllers
             _logger.LogInformation($"EventParticipantController handled \"Add()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<bool>>(result);
         }
-        [HttpPost]
+        [HttpPost("update")]
         public async Task<ActionResult<CallbackDto<bool>>> Update([FromBody] EventParticipant participant)
         {
             var sw = Stopwatch.StartNew();
@@ -47,7 +48,7 @@ namespace Api.Controllers
             _logger.LogInformation($"EventParticipantController handled \"Update()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<bool>>(result);
         }
-        [HttpDelete]
+        [HttpDelete("delete")]
         public async Task<ActionResult<CallbackDto<bool>>> Delete(Guid id)
         {
             var sw = Stopwatch.StartNew();
