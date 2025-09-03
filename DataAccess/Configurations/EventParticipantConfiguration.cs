@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DataAccess.Configurations
 {
-    public class EventParticipantConfiguration : IEntityTypeConfiguration<EventParticipant>
+    public class EventParticipantConfiguration : IEntityTypeConfiguration<Participant>
     {
-        public void Configure(EntityTypeBuilder<EventParticipant> builder)
+        public void Configure(EntityTypeBuilder<Participant> builder)
         {
             builder.ToTable("Participants").HasKey(x => x.Id);
             builder.Property(x => x.Id).ValueGeneratedNever();

@@ -34,12 +34,12 @@ namespace Api
             services.AddSingleton<IContextManager, ContextManager>();
             services.AddTransient<IUserRepository<User>, UserRepository>();
             services.AddTransient<IRepository<Event>, EventRepository>();
-            services.AddTransient<IRepository<EventParticipant>, EventParticipantRepository>();
+            services.AddTransient<IRepository<Participant>, ParticipantRepository>();
             services.AddSingleton<ITokenProvider, JwtTokenProvider>();
             services.AddSingleton<IHasher, BCryptHasher>();
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<IEventService, EventService>();
-            services.AddSingleton<IEventParticipantService, EventParticipantService>();
+            services.AddSingleton<IParticipantService, ParticipantService>();
 
             var app = builder.Build();
 

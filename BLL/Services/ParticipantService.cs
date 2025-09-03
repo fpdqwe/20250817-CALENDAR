@@ -1,28 +1,29 @@
 ﻿using BLL.Abstractions;
 using BLL.Dto;
+using BLL.Extensions;
 using DataAccess.Abstractions;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace BLL.Services
 {
-    public class EventParticipantService : IEventParticipantService
+    public class ParticipantService : IParticipantService
     {
-        private readonly IRepository<EventParticipant> _repository;
+        private readonly IRepository<Participant> _repository;
         private readonly ILogger _logger;
-        public EventParticipantService(IRepository<EventParticipant> repository,
-            ILogger<EventParticipantService> logger)
+        public ParticipantService(IRepository<Participant> repository,
+            ILogger<ParticipantService> logger)
         {
             ArgumentNullException.ThrowIfNull(repository, nameof(repository));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
             _repository = repository;
             _logger = logger;
-            _logger.LogDebug($"New instance of {nameof(EventParticipantService)} was initialized");
+            _logger.LogDebug($"New instance of {nameof(ParticipantService)} was initialized");
         }
-        public async Task<CallbackDto<EventParticipant>> Get(Guid id)
+        public async Task<CallbackDto<ParticipantDto>> Get(Guid id)
         {
             _logger.LogDebug($"Trying to get participant id: {id}");
-            var callback = new CallbackDto<EventParticipant>();
+            var callback = new CallbackDto<ParticipantDto>();
             var result = await _repository.Get(id);
             if (result == null)
             {
@@ -33,56 +34,56 @@ namespace BLL.Services
             else
             {
                 _logger.LogDebug($"Successfuly got participant from db, id: {id}");
-                callback.AddObject(result);
+                callback.AddObject(result.ToDto());
             }
             return callback;
         }
-        public async Task<CallbackDto<bool>> Add(EventParticipant entity)
+        public async Task<CallbackDto<bool>> Add(CreateParticipantDto dto)
         {
-            _logger.LogDebug($"Trying to add new participant, id {entity.Id}");
+            _logger.LogDebug($"Trying to add new participant, id {dto.UserId}");
             var callback = new CallbackDto<bool>();
-            if (entity == null)
+            if (dto == null)
             {
                 var error = "Entity was null";
                 _logger.LogWarning(error);
                 callback.SetErrorMessage(error);
                 return callback;
             }
-            var result = await _repository.Add(entity);
+            var result = await _repository.Add(dto.ToEntity());
             callback.AddObject(result);
-            _logger.LogDebug($"Add participant id: {entity.Id} operation result: {result}");
+            _logger.LogDebug($"Add participant id: {dto.UserId} operation result: {result}");
             return callback;
         }
-        public async Task<CallbackDto<bool>> Update(EventParticipant entity)
+        public async Task<CallbackDto<bool>> Update(UpdateParticipantDto dto)
         {
-            _logger.LogDebug($"Trying to update participant, id {entity.Id}");
+            _logger.LogDebug($"Trying to update participant, id {dto.Id}");
             var callback = new CallbackDto<bool>();
-            if (entity == null)
+            if (dto == null)
             {
                 var error = "Entity was null";
                 _logger.LogWarning(error);
                 callback.SetErrorMessage(error);
                 return callback;
             }
-            var result = await _repository.Update(entity);
+            var result = await _repository.Update(dto.ToEntity());
             callback.AddObject(result);
-            _logger.LogDebug($"Update participant id: {entity.Id} operation result: {result}");
+            _logger.LogDebug($"Update participant id: {dto.Id} operation result: {result}");
             return callback;
         }
-        public async Task<CallbackDto<bool>> Delete(EventParticipant entity)
+        public async Task<CallbackDto<bool>> Delete(DeleteDto dto)
         {
-            _logger.LogDebug($"Trying to delete participant, id {entity.Id}");
+            _logger.LogDebug($"Trying to delete participant, id {dto.Id}");
             var callback = new CallbackDto<bool>();
-            if (entity == null)
+            if (dto == null)
             {
                 var error = "Entity was null";
                 _logger.LogWarning(error);
                 callback.SetErrorMessage(error);
                 return callback;
             }
-            var result = await _repository.Delete(entity);
+            var result = await _repository.Delete(dto.ToParticipant());
             callback.AddObject(result);
-            _logger.LogDebug($"Delete participant id: {entity.Id} operation result: {result}");
+            _logger.LogDebug($"Delete participant id: {dto.Id} operation result: {result}");
             return callback;
         }
     }

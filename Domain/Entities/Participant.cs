@@ -2,7 +2,7 @@
 
 namespace Domain.Entities
 {
-    public class EventParticipant : IEntity
+    public class Participant : IEntity
     {
         public Guid Id { get; set; }
         public string Role { get; set; } = "Owner";

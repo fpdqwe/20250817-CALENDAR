@@ -1,5 +1,6 @@
 ﻿using BLL.Abstractions;
 using BLL.Dto;
+using BLL.Extensions;
 using DataAccess.Abstractions;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -19,12 +20,12 @@ namespace BLL.Services
             _logger = logger;
             _logger.LogDebug($"New instance of {nameof(EventService)} was initialized");
         }
-        public async Task<CallbackDto<List<Event>>> GetByUserId(Guid userId, int year)
+        public async Task<CallbackDto<List<EventDto>>> GetByUserId(Guid userId, int year)
         {
             _logger.LogDebug($"Trying to get all event of user: {userId}, by {year} year");
-            var callback = new CallbackDto<List<Event>>();
-            var result = await _repository.GetByUserId(userId, year);
-            if (result == null)
+            var callback = new CallbackDto<List<EventDto>>();
+            var rawData = await _repository.GetByUserId(userId, year);
+            if (rawData == null)
             {
                 var error = $"Failed to load events of user: {userId} from repository";
                 _logger.LogWarning(error);
@@ -32,6 +33,7 @@ namespace BLL.Services
             }
             else
             {
+                var result = rawData.Select(x => x.ToDto(year)).ToList();
                 callback.AddObject(result);
             }
             return callback;

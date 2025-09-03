@@ -1,5 +1,4 @@
-﻿using Domain.Entities;
-using Domain.Enums;
+﻿using Domain.Enums;
 
 namespace BLL.Dto
 {
@@ -16,6 +15,6 @@ namespace BLL.Dto
         public string? Ico { get; set; }
         public IterationTime IterationTime { get; set; }
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-        public List<EventParticipant>? Participants { get; set; }
+        public List<ParticipantDto>? Participants { get; set; }
     }
 }

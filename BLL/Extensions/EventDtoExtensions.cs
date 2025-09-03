@@ -7,7 +7,7 @@ namespace BLL.Extensions
     {
         public static Event ToEntity(this EventDto dto)
         {
-            return new Event
+            var result = new Event
             {
                 Id = dto.Id,
                 Name = dto.Name,
@@ -18,27 +18,35 @@ namespace BLL.Extensions
                 Color = dto.Color,
                 CreatorId = dto.CreatorId,
                 Ico = dto.Ico,
-                Participants = dto.Participants,
                 IterationTime = dto.IterationTime,
             };
+            if (dto.Participants != null)
+                result.Participants = dto.Participants.Select(x => x.ToEntity()).ToList();
+            return result;
         }
-        public static EventDto ToDto(this Event ev, int year)
+        public static Event ToEntity(this CreateEventDto dto)
         {
-            return new EventDto
+            var owner = new Participant()
             {
-                Id = ev.Id,
-                Name = ev.Name,
-                OriginalDate = ev.Date,
-                DateCreated = ev.DateCreated,
-                Description = ev.Description,
-                Duration = ev.Duration,
-                CreatorId = ev.CreatorId,
-                Color = ev.Color,
-                Ico = ev.Ico,
-                IterationTime = ev.IterationTime,
-                Participants = ev.Participants,
-                OccurenceDates = ev.GetOccurences(year)
+                Id = dto.CreatorId,
+                Role = "Owner",
+                User = new User() { Id = dto.CreatorId }
             };
+            var result = new Event
+            {
+                Id = Guid.NewGuid(),
+                Date = dto.Date,
+                Duration = dto.Duration,
+                Name = dto.Name,
+                Description = dto.Description,
+                Color = dto.Color,
+                Ico = dto.Ico,
+                IterationTime = dto.IterationTime,
+                DateCreated = dto.DateCreated,
+                Participants = new List<Participant>() { owner }
+            };
+            result.Participants.First().Event = result;
+            return result;
         }
     }
 }
