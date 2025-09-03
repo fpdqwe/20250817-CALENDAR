@@ -17,25 +17,24 @@ namespace Api.Controllers
             _logger.LogDebug($"New instance of {GetType().Name} was initialized");
         }
 
-        [HttpGet("ln/{login}")]
+        [HttpGet("login={login}")]
         public async Task<ActionResult<CallbackDto<FullUserDto>>> GetByLogin(string login)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.GetUserByLogin(login);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"GetByLogin()\" in {sw.ElapsedMilliseconds}ms.");
-
+            _logger.LogInformation($"UserController handled \"GetByLogin()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<FullUserDto>>(result);
         }
-        [HttpGet("id/{id}")]
+        [HttpGet("id={id}")]
         public async Task<ActionResult<CallbackDto<FullUserDto>>> Get(Guid id)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.GetUser(id);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"Get()\" in {sw.ElapsedMilliseconds}ms.");
+            _logger.LogInformation($"UserController handled \"Get()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<FullUserDto>>(result);
         }
         [HttpPost("auth")]
@@ -44,9 +43,9 @@ namespace Api.Controllers
             var sw = Stopwatch.StartNew();
             var result = await _service.AuthUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
-            if (result.Value != null) Response.Cookies.Append("jwt", result.Value);
+            Response.Cookies.Append("jwt", result.Value);
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}ms.");
+            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<string>>(result);
         }
         [HttpPost("add")]
@@ -56,7 +55,7 @@ namespace Api.Controllers
             var result = await _service.AddUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}ms.");
+            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<bool>>(result);
         }
         [HttpPost("update")]
@@ -66,7 +65,7 @@ namespace Api.Controllers
             var result = await _service.UpdateUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}ms.");
+            _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<bool>>(result);
         }
         [HttpDelete("delete")]
@@ -76,7 +75,7 @@ namespace Api.Controllers
             var result = await _service.DeleteUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
-            _logger.LogInformation($"UserController handled \"Delete()\" in {sw.ElapsedMilliseconds}ms.");
+            _logger.LogInformation($"UserController handled \"Delete()\" in {sw.ElapsedMilliseconds}");
             return new ActionResult<CallbackDto<bool>>(result);
         }
     }

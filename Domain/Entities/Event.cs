@@ -6,8 +6,7 @@ namespace Domain.Entities
     public class Event : IEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid CreatorId { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime Time { get; set; }
         public int Duration { get; set; } // Duration in 15min intervals
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }

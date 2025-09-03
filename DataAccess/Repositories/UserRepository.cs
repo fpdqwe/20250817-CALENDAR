@@ -22,7 +22,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     await context.Users.AddAsync(entity);
                     await context.SaveChangesAsync();
@@ -40,7 +40,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     context.Users.Remove(entity);
                     await context.SaveChangesAsync();
@@ -58,7 +58,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     return await context.Users.FirstOrDefaultAsync(x => x.Id == entityId);
                 }
@@ -74,7 +74,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     return await context.Users.FirstOrDefaultAsync(x => x.Login == login);
                 }
@@ -90,7 +90,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     return await context.Users.Where(x => x.Login == login)
                         .Select(x => x.Password).FirstOrDefaultAsync();
@@ -107,7 +107,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                using (var context = _contextManager.GenerateDatabaseContext())
                 {
                     context.Users.Update(entity);
                     await context.SaveChangesAsync();

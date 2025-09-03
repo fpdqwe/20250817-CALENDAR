@@ -113,10 +113,6 @@ namespace BLL.Services
         {
             var callback = new CallbackDto<bool>();
             callback.AddObject(await _repository.Delete(new User() { Id = dto.Id }));
-            if (callback.Value == false)
-            {
-                callback.SetErrorMessage("Failed to delete user");
-            }
             return callback;
         }
     }

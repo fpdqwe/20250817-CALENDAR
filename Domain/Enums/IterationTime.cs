@@ -7,6 +7,5 @@
         Biweekly,
         Monthly,
         Annual,
-        Daily,
     }
 }
