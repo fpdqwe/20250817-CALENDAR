@@ -1,13 +1,13 @@
 ﻿using BLL.Dto;
-using Domain.Entities;
 
 namespace BLL.Abstractions
 {
     public interface IEventService
     {
-        public Task<CallbackDto<Event>> Get(Guid id);
-        public Task<CallbackDto<bool>> Update(Event entity);
-        public Task<CallbackDto<bool>> Add(Event entity);
-        public Task<CallbackDto<bool>> Delete(Event entity);
+        Task<CallbackDto<List<EventDto>>> GetByUserId(Guid userId, int year);
+        public Task<CallbackDto<EventDto>> Get(Guid id);
+        public Task<CallbackDto<bool>> Update(UpdateEventDto dto);
+        public Task<CallbackDto<bool>> Add(CreateEventDto dto);
+        public Task<CallbackDto<bool>> Delete(DeleteDto dto);
     }
 }

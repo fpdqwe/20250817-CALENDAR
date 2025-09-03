@@ -25,6 +25,7 @@ namespace BLL.Extensions
                 Lastname = participant.User.Lastname,
             };
         }
+        #region DataTransfers
         public static Participant ToEntity(this ParticipantDto dto)
         {
             return new Participant
@@ -67,5 +68,6 @@ namespace BLL.Extensions
         {
             return new Participant { Id = dto.Id };
         }
+        #endregion
     }
 }
