@@ -8,9 +8,9 @@ namespace BLL.Services
 {
     public class EventService : IEventService
     {
-        private readonly IRepository<Event> _repository;
+        private readonly IEventRepository<Event> _repository;
         private readonly ILogger _logger;
-        public EventService(IRepository<Event> repository,
+        public EventService(IEventRepository<Event> repository,
             ILogger<EventService> logger)
         {
             ArgumentNullException.ThrowIfNull(repository, nameof(repository));
@@ -18,6 +18,23 @@ namespace BLL.Services
             _repository = repository;
             _logger = logger;
             _logger.LogDebug($"New instance of {nameof(EventService)} was initialized");
+        }
+        public async Task<CallbackDto<List<Event>>> GetByUserId(Guid userId, int year)
+        {
+            _logger.LogDebug($"Trying to get all event of user: {userId}, by {year} year");
+            var callback = new CallbackDto<List<Event>>();
+            var result = await _repository.GetByUserId(userId, year);
+            if (result == null)
+            {
+                var error = $"Failed to load events of user: {userId} from repository";
+                _logger.LogWarning(error);
+                callback.SetErrorMessage(error);
+            }
+            else
+            {
+                callback.AddObject(result);
+            }
+            return callback;
         }
         public async Task<CallbackDto<Event>> Get(Guid id)
         {

@@ -27,7 +27,7 @@ namespace BLL.Dto
             var result = new Event
             {
                 Id = Guid.NewGuid(),
-                Time = Time,
+                Date = Time,
                 Duration = Duration,
                 Name = Name,
                 Description = Description,
