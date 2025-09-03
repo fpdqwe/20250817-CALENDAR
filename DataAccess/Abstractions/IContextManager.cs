@@ -2,6 +2,6 @@
 {
     public interface IContextManager
     {
-        public ApplicationDbContext GenerateDatabaseContext();
+        public ApplicationDbContext CreateDatabaseContext();
     }
 }

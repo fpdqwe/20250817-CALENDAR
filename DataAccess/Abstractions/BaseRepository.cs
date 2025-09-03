@@ -3,6 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DataAccess.Abstractions
 {
+    /// <summary>
+    /// Base repository for fast implementation of CRUD operations.
+    /// Requires clarification for complex entities 
+    /// (in such cases, it is better to inherit from IRepository directly)
+    /// </summary>
+    /// <typeparam name="T">The main entity that the repository works with.</typeparam>
     public class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         public IContextManager ContextManager { get; private set; }
@@ -15,14 +21,14 @@ namespace DataAccess.Abstractions
 
         virtual public async Task<T?> Get(Guid entityId)
         {
-            using (var context = ContextManager.GenerateDatabaseContext())
+            using (var context = ContextManager.CreateDatabaseContext())
             {
                 return await context.Set<T>().FindAsync(entityId);
             }
         }
         virtual public async Task<bool> Add(T entity)
         {
-            using (var context = ContextManager.GenerateDatabaseContext())
+            using (var context = ContextManager.CreateDatabaseContext())
             {
                 var iDbEntity = entity as IEntity;
                 if (iDbEntity == null) throw new ArgumentException("Entity should be IDbEntity type", "entity");
@@ -34,7 +40,7 @@ namespace DataAccess.Abstractions
         }
         virtual public async Task<bool> Update(T entity)
         {
-            using (var context = ContextManager.GenerateDatabaseContext())
+            using (var context = ContextManager.CreateDatabaseContext())
             {
                 var iDbEntity = entity as IEntity;
                 if (iDbEntity == null) throw new ArgumentException("Entity should be IDbEntity type", "entity");
@@ -55,7 +61,7 @@ namespace DataAccess.Abstractions
         }
         public async Task<bool> Delete(T entity)
         {
-            using (var context = ContextManager.GenerateDatabaseContext())
+            using (var context = ContextManager.CreateDatabaseContext())
             {
                 try
                 {
