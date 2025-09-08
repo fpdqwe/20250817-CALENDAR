@@ -1,12 +1,12 @@
 ﻿using BLL.Abstractions;
 using BLL.Dto;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Api.Controllers
 {
-    [ApiController, Route("api/v1/events"), Authorize]
+    [ApiController, Route("api/v1/events")]
+    //[Authorize]
     public class EventController : ControllerBase
     {
         private readonly IEventService _service;

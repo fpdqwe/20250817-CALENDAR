@@ -1,4 +1,11 @@
 ﻿using BLL;
+using BLL.Abstractions;
+using BLL.Services;
+using BLL.Utilities;
+using DataAccess;
+using DataAccess.Abstractions;
+using DataAccess.Repositories;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -35,6 +42,20 @@ namespace Api.Extensions
                 });
 
             services.AddAuthorization();
+        }
+
+        public static void AddBLLServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IContextManager, ContextManager>();
+            services.AddTransient<IUserRepository<User>, UserRepository>();
+            services.AddTransient<IEventRepository<Event>, EventRepository>();
+            services.AddTransient<IRepository<Event>, EventRepository>();
+            services.AddTransient<IRepository<Participant>, ParticipantRepository>();
+            services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+            services.AddSingleton<IHasher, BCryptHasher>();
+            services.AddSingleton<IUserService, UserService>();
+            services.AddSingleton<IEventService, EventService>();
+            services.AddSingleton<IParticipantService, ParticipantService>();
         }
     }
 }

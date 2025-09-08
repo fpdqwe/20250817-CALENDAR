@@ -25,7 +25,7 @@ namespace CalendarTests
         {
             _client = new RestClient(BaseUrl);
         }
-        [Test, Order(0), Timeout(3000)]
+        [Test, Order(0), Timeout(2000)]
         public async Task Add_ValidUser_ReturnsSuccess()
         {
             // Arrange
@@ -48,7 +48,7 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.True);
             Assert.That(response.Data.Value, Is.True);
         }
-        [Test, Order(1), Timeout(3000)]
+        [Test, Order(1), Timeout(1000)]
         public async Task Add_DuplicateUser_ReturnsError()
         {
             // Arrange

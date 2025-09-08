@@ -9,7 +9,7 @@ namespace DataAccess.Abstractions
     /// (in such cases, it is better to inherit from IRepository directly)
     /// </summary>
     /// <typeparam name="T">The main entity that the repository works with.</typeparam>
-    public class BaseRepository<T> : IRepository<T> where T : class, IEntity
+    public abstract class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         public IContextManager ContextManager { get; private set; }
         protected ILogger _logger;

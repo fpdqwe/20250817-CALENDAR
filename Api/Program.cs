@@ -1,12 +1,6 @@
 using Api.Extensions;
 using BLL;
-using BLL.Abstractions;
-using BLL.Services;
-using BLL.Utilities;
 using DataAccess;
-using DataAccess.Abstractions;
-using DataAccess.Repositories;
-using Domain.Entities;
 
 namespace Api
 {
@@ -30,16 +24,9 @@ namespace Api
             services.Configure<DbContextOptions>(config.GetSection(nameof(DbContextOptions)));
 
             var jwtOptions = config.GetRequiredSection(nameof(JwtOptions)).Get<JwtOptions>();
+
             services.AddApiAuthentication(jwtOptions);
-            services.AddSingleton<IContextManager, ContextManager>();
-            services.AddTransient<IUserRepository<User>, UserRepository>();
-            services.AddTransient<IRepository<Event>, EventRepository>();
-            services.AddTransient<IRepository<Participant>, ParticipantRepository>();
-            services.AddSingleton<ITokenProvider, JwtTokenProvider>();
-            services.AddSingleton<IHasher, BCryptHasher>();
-            services.AddSingleton<IUserService, UserService>();
-            services.AddSingleton<IEventService, EventService>();
-            services.AddSingleton<IParticipantService, ParticipantService>();
+            services.AddBLLServices();
 
             var app = builder.Build();
 
