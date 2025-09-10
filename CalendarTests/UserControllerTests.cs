@@ -7,6 +7,7 @@ namespace CalendarTests
     [TestFixture]
     public class UserControllerTests
     {
+        #region Configuration
         private static RestClient _client;
         private static Guid _newUserGuid;
         private static string _newUserLogin;
@@ -25,6 +26,12 @@ namespace CalendarTests
         {
             _client = new RestClient(BaseUrl);
         }
+        [TearDown]
+        public void TearDown()
+        {
+            _client?.Dispose();
+        }
+        #endregion
         [Test, Order(1), Timeout(2000)]
         public async Task Add_ValidUser_ReturnsSuccess()
         {
@@ -91,7 +98,6 @@ namespace CalendarTests
             Assert.That(response.Data.Value.Login, Is.EqualTo(login));
             _newUserGuid = response.Data.Value.Id;
         }
-
         [Test, Order(4), Timeout(1000)]
         public async Task GetByLogin_InvalidLogin_ReturnsError()
         {
@@ -126,7 +132,6 @@ namespace CalendarTests
             Assert.That(response.Data.Value, Is.Not.Null);
             Assert.That(response.Data.Value.Id, Is.EqualTo(userId));
         }
-
         [Test, Order(6), Timeout(1000)]
         public async Task Get_InvalidId_ReturnsError()
         {
@@ -143,7 +148,6 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.False);
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
         }
-
         [Test, Order(7), Timeout(1000)]
         public async Task Auth_ValidCredentials_ReturnsToken()
         {
@@ -166,7 +170,6 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.True);
             Assert.That(response.Data.Value, Is.Not.Empty);
         }
-
         [Test, Order(8), Timeout(1000)]
         public async Task Auth_InvalidCredentials_ReturnsError()
         {
@@ -190,7 +193,6 @@ namespace CalendarTests
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
             TestContext.WriteLine(response.Data.ErrorMessage);
         }
-
         [Test, Order(9), Timeout(1000)]
         public async Task Update_ValidUser_ReturnsSuccess()
         {
@@ -216,7 +218,6 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.True);
             Assert.That(response.Data.Value, Is.True);
         }
-
         [Test, Order(10), Timeout(1000)]
         public async Task Delete_ValidUser_ReturnsSuccess()
         {
@@ -238,7 +239,6 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.True);
             Assert.That(response.Data.Value, Is.True);
         }
-
         [Test, Order(11), Timeout(1000)]
         public async Task Delete_InvalidUser_ReturnsError()
         {
@@ -260,12 +260,6 @@ namespace CalendarTests
             Assert.That(response.Data.IsDataReceived, Is.False);
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
             TestContext.WriteLine(response.Data.ErrorMessage);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _client?.Dispose();
         }
     }
 }

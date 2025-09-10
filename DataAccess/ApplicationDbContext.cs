@@ -8,7 +8,7 @@ namespace DataAccess
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<Participant> EventsParticipants { get; set; }
+        public DbSet<Participant> Participants { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
             Database.EnsureCreated();

@@ -9,11 +9,13 @@ namespace BLL.Extensions
         #region Actual
         public static DateTime[]? GetOccurences(this Event ev, DateTime start, int count)
         {
+            if (ev.IterationTime == IterationTime.Single) return [ev.Date];
             var strategy = ev.IterationTime.ToStrategy();
             return strategy.Iterate(ev.Date, start, count);
         }
         public static DateTime[]? GetOccurences(this Event ev, int year)
         {
+            if (ev.IterationTime == IterationTime.Single) return [ev.Date];
             var start = year.GetFirstYearDate();
             var end = year.GetLastYearDate();
 

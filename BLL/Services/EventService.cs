@@ -26,7 +26,7 @@ namespace BLL.Services
                 userId, year);
             var callback = new CallbackDto<List<EventDto>>();
             var result = await _repository.GetByUserId(userId, year);
-            if (result.IsSuccess && result.Result != null)
+            if (result.IsSuccess && result.Result != null && result.Result.Any())
             {
                 var filtered = result.Result.Select(x => x.ToDto(year)).ToList();
                 callback.AddObject(filtered);
@@ -34,7 +34,7 @@ namespace BLL.Services
             else
             {
                 var error = $"Failed to load events of user: {userId} from repository";
-                _logger.LogWarning(error);
+                _logger.LogInformation(error);
                 callback.SetErrorMessage(error);
             }
             return callback;

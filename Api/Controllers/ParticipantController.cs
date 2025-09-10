@@ -30,6 +30,9 @@ namespace Api.Controllers
         [HttpPost("add")]
         public async Task<ActionResult<CallbackDto<Guid>>> Add([FromBody] CreateParticipantDto participant)
         {
+            if (participant.WarningTimeOffset < 0) return BadRequest("WarningTimeOffset can't be negative");
+            if (participant.UserId == Guid.Empty) return BadRequest("User id can't be empty");
+            if (participant.EventId == Guid.Empty) return BadRequest("Event id can't be empty");
             var sw = Stopwatch.StartNew();
             var result = await _service.Add(participant);
             if (result == null) throw new NullReferenceException(nameof(result));
