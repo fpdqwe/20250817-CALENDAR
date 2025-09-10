@@ -18,12 +18,13 @@ namespace DataAccess
             _useSensitiveDataLogging = options.Value.UseSensitiveDataLogging;
             _logger = logger;
         }
-        public ApplicationDbContext GenerateDatabaseContext()
+        public ApplicationDbContext CreateDatabaseContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseNpgsql(_connectionString)
                 .EnableSensitiveDataLogging(_useSensitiveDataLogging)
-                .LogTo(Console.WriteLine)
+                .EnableDetailedErrors(true)
+                .LogTo(Console.WriteLine, LogLevel.Information)
                 .Options;
             _logger.LogDebug("new ApplicationDbContext class instance was initialized");
             return new ApplicationDbContext(options);

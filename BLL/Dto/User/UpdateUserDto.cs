@@ -21,7 +21,7 @@ namespace BLL.Dto
                 Id = Id,
                 Login = Login,
                 Name = Name,
-                Surname = Surname,
+                Lastname = Surname,
                 Password = Password,
                 Zodiac = Zodiac,
                 DateOfBirth = DateOfBirth

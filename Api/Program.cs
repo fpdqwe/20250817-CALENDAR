@@ -1,3 +1,7 @@
+using Api.Extensions;
+using BLL;
+using DataAccess;
+
 namespace Api
 {
     public class Program
@@ -5,17 +9,27 @@ namespace Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var config = builder.Configuration;
+            var services = builder.Services;
+            config.AddJsonFile("Properties/secrets.json");
 
-            // Add services to the container.
+            services.AddLogging();
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+
+            services.Configure<JwtOptions>(config.GetSection(nameof(JwtOptions)));
+            services.Configure<DbContextOptions>(config.GetSection(nameof(DbContextOptions)));
+
+            var jwtOptions = config.GetRequiredSection(nameof(JwtOptions)).Get<JwtOptions>();
+
+            services.AddApiAuthentication(jwtOptions);
+            services.AddBLLServices();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -23,10 +37,14 @@ namespace Api
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Strict,
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
+                Secure = CookieSecurePolicy.Always
+            });
+            app.UseAuthentication();
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();
