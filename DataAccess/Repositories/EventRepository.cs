@@ -66,7 +66,7 @@ namespace DataAccess.Repositories
                             {
                                 // Telling ef that user already exists
                                 context.Entry(participant.User).State = EntityState.Unchanged;
-                                await context.EventsParticipants.AddAsync(participant);
+                                await context.Participants.AddAsync(participant);
                             }
                         }
                         await context.SaveChangesAsync();
@@ -102,6 +102,7 @@ namespace DataAccess.Repositories
                 {
                     var result = await context.Events
                         .Include(x => x.Participants)
+                        .Include(x => x.Creator)
                         .FirstOrDefaultAsync(x => x.Id == entityId);
 
                     sw.Stop();
@@ -125,7 +126,25 @@ namespace DataAccess.Repositories
             {
                 using (var context = ContextManager.CreateDatabaseContext())
                 {
-                    context.Events.Update(entity);
+                    var existingEvent = await context.Events
+                        .FirstOrDefaultAsync(x => x.Id == entity.Id);
+
+                    if (existingEvent == null)
+                    {
+                        sw.Stop();
+                        _logger.LogInformation("{TypeName} entity with id {EntityId} not found",
+                            GetType().Name, entity.Id);
+                        return new BoolResult(false, sw.ElapsedMilliseconds);
+                    }
+
+                    if (entity.Date != default) existingEvent.Date = entity.Date;
+                    if (entity.Duration > 0) existingEvent.Duration = entity.Duration;
+                    if (!string.IsNullOrEmpty(entity.Name)) existingEvent.Name = entity.Name;
+                    if (entity.Description != null) existingEvent.Description = entity.Description;
+                    if (entity.Color != null) existingEvent.Color = entity.Color;
+                    if (entity.Ico != null) existingEvent.Ico = entity.Ico;
+                    if (entity.IterationTime != default) existingEvent.IterationTime = entity.IterationTime;
+                    if (entity.CreatorId != default) existingEvent.CreatorId = entity.CreatorId;
                     await context.SaveChangesAsync();
                     sw.Stop();
                     _logger.LogInformation("{TypeName} successfuly updated entity {EntityId} in {ElapsedMs}ms",

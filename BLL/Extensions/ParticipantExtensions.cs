@@ -50,8 +50,8 @@ namespace BLL.Extensions
                 Color = dto.Color,
                 Role = dto.Role,
                 WarningTimeOffset = dto.WarningTimeOffset,
-                Event = new Event { Id = dto.EventId },
-                User = new User { Id = dto.UserId }
+                EventId = dto.EventId,
+                UserId = dto.UserId
             };
         }
         public static Participant ToEntity(this UpdateParticipantDto dto)

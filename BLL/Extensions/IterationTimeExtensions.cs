@@ -10,7 +10,6 @@ namespace BLL.Extensions
         {
             return enumeration switch
             {
-                IterationTime.Daily => new DailyStrategy(),
                 IterationTime.Weekly => new WeeklyStrategy(),
                 IterationTime.Biweekly => new BiweeklyStrategy(),
                 IterationTime.Monthly => new MonthlyStrategy(),
