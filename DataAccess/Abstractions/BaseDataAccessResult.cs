@@ -36,6 +36,13 @@
             Message = ex.Message;
             Duration = duration;
         }
+        protected BaseDataAccessResult(string exMessage, long duration)
+        {
+            IsSuccess = false;
+            Result = default;
+            Message = exMessage;
+            Duration = duration;
+        }
         protected BaseDataAccessResult(long duration)
         {
             IsSuccess = false;

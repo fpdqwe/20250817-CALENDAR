@@ -12,110 +12,149 @@ namespace DataAccess.Abstractions
     /// (in such cases, it is better to inherit from IRepository directly)
     /// </summary>
     /// <typeparam name="T">The main entity that the repository works with.</typeparam>
-    public abstract class BaseRepository<T> : IRepository<T> where T : class, IEntity
+    public abstract class BaseRepository<T> where T : class, IEntity
     {
-        public IContextManager ContextManager { get; private set; }
+        private const string EXCEPTION_FORMAT = "{RepositoryName} unexpected error in {OperationName}: {Message}";
+        private const string EXCEPTION_MESSAGE = "Unexpected error occured";
+        private const string ARGUMENT_EX_FORMAT = "{RepositoryName} argument error in {OperationName}: {Message}";
+        private const string DB_UPDATE_EX_FORMAT = "{RepositoryName} database error in {OperationName}: {Message}";
+        private const string DB_UPDATE_EX_MESSAGE = "Database error occured";
+        private const string DEF_INFO_FORMAT = "{RepositoryName} {OperationName} completed in {ElapsedMs}ms";
+        private const string VAL_FAIL_FORMAT = "{RepositoryName} {OperationName} failed validation: {Message}";
+        private const string RES_NULL_FORMAT = "{RepositoryName} {OperationName} result was null unexpectedly";
+        private const string RES_MESSAGE = "Operation result was invalid. Try again later";
+        public IContextManager ContextManager { get; }
         protected ILogger _logger;
         public BaseRepository(IContextManager contextManager, ILogger logger)
         {
+            ArgumentNullException.ThrowIfNull(contextManager, nameof(contextManager));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
             ContextManager = contextManager;
             _logger = logger;
         }
-
-        virtual public async Task<IResult<T>> Get(Guid entityId)
+        private IResult<TResult> HandleException<TResult>(Stopwatch sw, string operationName, string ex)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            T? result;
-            using (var context = ContextManager.CreateDatabaseContext())
-            {
-                result = await context.Set<T>().FindAsync(entityId);
-            }
             sw.Stop();
-            _logger.LogDebug($"{GetType().Name} handled get in {sw.ElapsedMilliseconds}ms.");
-            return new EntityResult<T>(result, sw.ElapsedMilliseconds);
+            _logger.LogError(EXCEPTION_FORMAT, GetType().Name, operationName, ex);
+            return CreateErrorResult<TResult>(EXCEPTION_MESSAGE, sw.ElapsedMilliseconds);
         }
-        virtual public async Task<IResult<Guid>> Add(T entity)
+        private IResult<TResult> HandleArgumentException<TResult>(Stopwatch sw, string operationName, string ex)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            sw.Stop();
+            _logger.LogWarning(ARGUMENT_EX_FORMAT, GetType().Name, operationName, ex);
+            return CreateErrorResult<TResult>(ex, sw.ElapsedMilliseconds);
+        }
+        private IResult<TResult> HandleDbUpdateException<TResult>(Stopwatch sw, string operationName, string ex)
+        {
+            sw.Stop();
+            _logger.LogWarning(DB_UPDATE_EX_FORMAT, GetType().Name, operationName, ex);
+            return CreateErrorResult<TResult>(DB_UPDATE_EX_MESSAGE, sw.ElapsedMilliseconds);
+        }
+        protected async Task<IResult<TResult>> ExecuteOperation<TResult>(
+            Func<ApplicationDbContext, Task<TResult>> operation,
+            string operationName)
+        {
+            var sw = Stopwatch.StartNew();
             try
             {
                 using (var context = ContextManager.CreateDatabaseContext())
                 {
-                    await context.Set<T>().AddAsync(entity);
-                    await context.SaveChangesAsync();
-
+                    var result = await operation(context);
                     sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly added entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new GuidResult(entity.Id, sw.ElapsedMilliseconds);
+
+                    _logger.LogInformation(DEF_INFO_FORMAT, GetType().Name, operationName, sw.ElapsedMilliseconds);
+
+                    return CreateSuccessResult(result, sw.ElapsedMilliseconds);
                 }
             }
-            catch (DbUpdateException dbEx)
+            catch (DbUpdateException dbUpdateException)
             {
-                sw.Stop();
-                _logger.LogError(dbEx, "{TypeName} database error on add: {Message}",
-                    GetType().Name, dbEx.InnerException?.Message ?? dbEx.Message);
-                return new GuidResult(dbEx, sw.ElapsedMilliseconds);
+                return HandleDbUpdateException<TResult>(sw, operationName, dbUpdateException.Message);
+            }
+            catch (ArgumentException argumentException)
+            {
+                return HandleArgumentException<TResult>(sw, operationName, argumentException.Message);
             }
             catch (Exception ex)
             {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on add}", GetType().Name);
-                return new GuidResult(ex, sw.ElapsedMilliseconds);
+                return HandleException<TResult>(sw, operationName, ex.Message);
             }
         }
-        virtual public async Task<IResult<bool>> Update(T entity)
+        protected async Task<IResult<TResult>> ExecuteOperation<TResult>(
+            Func<ApplicationDbContext, Task<(TResult Result, ValidationResult Validation)>> operation,
+            string operationName)
         {
             var sw = Stopwatch.StartNew();
-            using (var context = ContextManager.CreateDatabaseContext())
+            try
             {
-                var attachedEntity = await context.Set<T>().FindAsync(entity.Id);
-                if (attachedEntity != null)
+                using (var context = ContextManager.CreateDatabaseContext())
                 {
-                    context.Entry(attachedEntity).CurrentValues.SetValues(entity);
-                }
-                else
-                {
+                    var (result, validation) = await operation(context);
+
+                    if (!validation.IsValid)
+                    {
+                        sw.Stop();
+                        _logger.LogInformation(VAL_FAIL_FORMAT, GetType().Name, operationName, validation.ErrorMessage);
+                        return CreateErrorResult<TResult>(validation.ErrorMessage, sw.ElapsedMilliseconds);
+                    }
+                    if (result == null)
+                    {
+                        sw.Stop();
+                        _logger.LogWarning(RES_NULL_FORMAT, GetType().Name, operationName);
+                        return CreateErrorResult<TResult>(RES_MESSAGE, sw.ElapsedMilliseconds);
+                    }
                     sw.Stop();
-                    _logger.LogInformation("{TypeName} failed to update database. {EntityId} does not exists. Waste: {ElapsedMs}ms.",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new BoolResult(false, sw.ElapsedMilliseconds);
+                    _logger.LogInformation(DEF_INFO_FORMAT, GetType().Name, operationName, sw.ElapsedMilliseconds);
+
+                    return CreateSuccessResult(result, sw.ElapsedMilliseconds);
+
                 }
-                await context.SaveChangesAsync();
             }
-            sw.Stop();
-            _logger.LogInformation("{TypeName} successfuly added entity {EntityId} in {ElapsedMs}ms",
-                GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-            return new BoolResult(true, sw.ElapsedMilliseconds);
+            catch (DbUpdateException dbUpdateException)
+            {
+                return HandleDbUpdateException<TResult>(sw, operationName, dbUpdateException.Message);
+            }
+            catch (ArgumentException argumentException)
+            {
+                return HandleArgumentException<TResult>(sw, operationName, argumentException.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<TResult>(sw, operationName, ex.Message);
+            }
         }
-        public async Task<IResult<bool>> Delete(T entity)
+        protected virtual IResult<TResult> CreateSuccessResult<TResult>(TResult result, long duration)
         {
-            var sw = Stopwatch.StartNew();
-            using (var context = ContextManager.CreateDatabaseContext())
-            {
-                try
-                {
-                    context.Set<T>().Remove(entity);
-                    await context.SaveChangesAsync();
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly deleted entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new BoolResult(true, sw.ElapsedMilliseconds);
-                }
-                catch (DbUpdateException dbEx)
-                {
-                    sw.Stop();
-                    _logger.LogError(dbEx, "{TypeName} database error on delete: {Message}",
-                        GetType().Name, dbEx.InnerException?.Message ?? dbEx.Message);
-                    return new BoolResult(dbEx, sw.ElapsedMilliseconds);
-                }
-                catch (Exception ex)
-                {
-                    sw.Stop();
-                    _logger.LogError(ex, "{TypeName} Unexpected error on add}", GetType().Name);
-                    return new BoolResult(ex, sw.ElapsedMilliseconds);
-                }
-            }
+            if (result is bool boolResult)
+                return (IResult<TResult>)new BoolResult(boolResult, duration);
+
+            if (result is Guid guidResult)
+                return (IResult<TResult>)new GuidResult(guidResult, duration);
+
+            if (result is IEntity entityResult)
+                return new EntityResult<TResult>((TResult)(object)entityResult, duration);
+
+            return new EntityResult<TResult>(result, duration);
+        }
+        protected virtual IResult<TResult> CreateErrorResult<TResult>(Exception ex, long duration)
+        {
+            if (typeof(TResult) == typeof(bool))
+                return (IResult<TResult>)new BoolResult(ex, duration);
+
+            if (typeof(TResult) == typeof(Guid))
+                return (IResult<TResult>)new GuidResult(ex, duration);
+
+            return new EntityResult<TResult>(ex, duration);
+        }
+        protected virtual IResult<TResult> CreateErrorResult<TResult>(string exMessage, long duration)
+        {
+            if (typeof(TResult) == typeof(bool))
+                return (IResult<TResult>)new BoolResult(exMessage, duration);
+
+            if (typeof(TResult) == typeof(Guid))
+                return (IResult<TResult>)new GuidResult(exMessage, duration);
+
+            return new EntityResult<TResult>(exMessage, duration);
         }
     }
 }

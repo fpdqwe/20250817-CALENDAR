@@ -1,181 +1,91 @@
 ﻿using DataAccess.Abstractions;
-using DataAccess.Results;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace DataAccess.Repositories
 {
-    public class UserRepository : IUserRepository<User>
+    public class UserRepository : BaseRepository<User>, IUserRepository<User>
     {
-        private readonly IContextManager _contextManager;
-        private readonly ILogger _logger;
         public UserRepository(IContextManager contextManager, ILogger<UserRepository> logger)
-        {
-            _contextManager = contextManager;
-            _logger = logger;
-            _logger.LogDebug($"New instance of {GetType().Name} was initialized");
-        }
-
-        public IContextManager ContextManager => _contextManager;
-
+            : base(contextManager, logger) { }
         public async Task<IResult<Guid>> Add(User entity)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
-                {
-                    await context.Users.AddAsync(entity);
-                    await context.SaveChangesAsync();
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly added entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new GuidResult(entity.Id, sw.ElapsedMilliseconds);
-                }
-            }
-            catch (DbUpdateException dbEx)
-            {
-                sw.Stop();
-                _logger.LogError(dbEx, "{TypeName} database error on add: {Message}",
-                    GetType().Name, dbEx.InnerException?.Message ?? dbEx.Message);
-                return new GuidResult(dbEx, sw.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on add}", GetType().Name);
-                return new GuidResult(ex, sw.ElapsedMilliseconds);
-            }
+                await context.Users.AddAsync(entity);
+                await context.SaveChangesAsync();
+                return entity.Id;
+            }, nameof(Add));
         }
         public async Task<IResult<bool>> Delete(User entity)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
+                context.Users.Attach(entity);
+                context.Users.Remove(entity);
+                try
                 {
-                    context.Users.Remove(entity);
                     await context.SaveChangesAsync();
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly deleted entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new BoolResult(true, sw.ElapsedMilliseconds);
+                    return true;
                 }
-            }
-            catch (DbUpdateException dbEx)
-            {
-                sw.Stop();
-                _logger.LogError(dbEx, "{TypeName} database error on delete: {Message}",
-                    GetType().Name, dbEx.InnerException?.Message ?? dbEx.Message);
-                return new BoolResult(dbEx, sw.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on delete}", GetType().Name);
-                return new BoolResult(ex, sw.ElapsedMilliseconds);
-            }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return false;
+                }
+            }, nameof(Delete));
         }
         public async Task<IResult<User>> Get(Guid entityId)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
-                {
-                    var result = await context.Users.FirstOrDefaultAsync(x => x.Id == entityId);
-
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly got entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entityId, sw.ElapsedMilliseconds);
-                    return new EntityResult<User>(result, sw.ElapsedMilliseconds);
-                }
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on get}", GetType().Name);
-                return new EntityResult<User>(ex, sw.ElapsedMilliseconds);
-            }
+                var result = await context.Users.FindAsync(entityId);
+                if (result == null) return (null, ValidationResult.Invalid($"User id: {entityId} does not exists"));
+                else return (result, ValidationResult.Valid());
+            }, nameof(Get));
         }
-
         public async Task<IResult<User>> GetByLogin(string login)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
-                {
-                    var result = await context.Users.FirstOrDefaultAsync(x => x.Login == login);
-
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly got entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, login, sw.ElapsedMilliseconds);
-                    return new EntityResult<User>(result, sw.ElapsedMilliseconds);
-                }
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on get}", GetType().Name);
-                return new EntityResult<User>(ex, sw.ElapsedMilliseconds);
-            }
+                var result = await context.Users.FirstOrDefaultAsync(x => x.Login == login);
+                if (result == null) return (null, ValidationResult.Invalid($"User login: {login} does not exists"));
+                else return (result, ValidationResult.Valid());
+            }, nameof(GetByLogin));
         }
-
         public async Task<IResult<string>> GetPasswordByLogin(string login)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
-                {
-                    var result = await context.Users.Where(x => x.Login == login)
-                        .Select(x => x.Password).FirstOrDefaultAsync();
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly got password" +
-                        " entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, login, sw.ElapsedMilliseconds);
-                    return new EntityResult<string>(result, sw.ElapsedMilliseconds);
-                }
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on GetPassword}", GetType().Name);
-                return new EntityResult<string>(ex, sw.ElapsedMilliseconds);
-            }
+                var result = await context.Users.Where(x => x.Login == login)
+                    .Select(x => x.Password).FirstOrDefaultAsync();
+                if (result == null) return (null, ValidationResult.Invalid($"User login: {login} does not exists"));
+                else return (result, ValidationResult.Valid());
+            }, nameof(GetPasswordByLogin));
         }
-
         public async Task<IResult<bool>> Update(User entity)
         {
-            var sw = Stopwatch.StartNew();
-            try
+            return await ExecuteOperation(async context =>
             {
-                using (var context = _contextManager.CreateDatabaseContext())
-                {
-                    context.Users.Update(entity);
-                    await context.SaveChangesAsync();
-                    sw.Stop();
-                    _logger.LogInformation("{TypeName} successfuly updated entity {EntityId} in {ElapsedMs}ms",
-                        GetType().Name, entity.Id, sw.ElapsedMilliseconds);
-                    return new BoolResult(true, sw.ElapsedMilliseconds);
-                }
-            }
-            catch (DbUpdateException dbEx)
-            {
-                sw.Stop();
-                _logger.LogError(dbEx, "{TypeName} database error on update: {Message}",
-                    GetType().Name, dbEx.InnerException?.Message ?? dbEx.Message);
-                return new BoolResult(dbEx, sw.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                _logger.LogError(ex, "{TypeName} Unexpected error on update}", GetType().Name);
-                return new BoolResult(ex, sw.ElapsedMilliseconds);
-            }
+                var existingUser = await context.Users
+                    .FirstOrDefaultAsync(u => u.Id == entity.Id);
+
+                if (existingUser == null)
+                    return (false, ValidationResult.Invalid("User does not exists"));
+                if (!string.IsNullOrEmpty(entity.Login) && entity.Login != existingUser.Login)
+                    return (false, ValidationResult.Invalid("Login cannot be changed"));
+                if (entity.DateRegistered != default && entity.DateRegistered != existingUser.DateRegistered)
+                    return (false, ValidationResult.Invalid("Registration date cannot be changed"));
+
+                if (!string.IsNullOrEmpty(entity.Name)) existingUser.Name = entity.Name;
+                if (!string.IsNullOrEmpty(entity.Lastname)) existingUser.Lastname = entity.Lastname;
+                if (!string.IsNullOrEmpty(entity.Password)) existingUser.Password = entity.Password;
+                if (entity.Zodiac != default) existingUser.Zodiac = entity.Zodiac;
+                if (entity.DateOfBirth != default) existingUser.DateOfBirth = entity.DateOfBirth;
+
+                await context.SaveChangesAsync();
+                return (true, ValidationResult.Valid());
+            }, nameof(Update));
         }
     }
 }

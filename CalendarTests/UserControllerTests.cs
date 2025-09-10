@@ -247,6 +247,7 @@ namespace CalendarTests
             {
                 Id = Guid.NewGuid() // Несуществующий ID
             };
+            TestContext.WriteLine($"Test guid: {deleteDto.Id}");
 
             var request = new RestRequest("delete", Method.Delete);
             request.AddJsonBody(deleteDto);

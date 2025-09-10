@@ -7,6 +7,7 @@ namespace DataAccess.Results
         public EntityResult(long duration) : base(duration) { }
         public EntityResult(T? result, long duration) : base(result, duration) { }
         public EntityResult(Exception ex, long duration) : base(ex, duration) { }
+        public EntityResult(string exMessage, long duration) : base(exMessage, duration) { }
         public EntityResult(bool isSuccess, T? result, string? exMessage, long duration = 0)
             : base(isSuccess, result, exMessage, duration) { }
     }
