@@ -12,7 +12,7 @@ namespace DataAccess.Abstractions
     /// <typeparam name="T">The main entity(User) that the repository works with.</typeparam>
     public interface IUserRepository<T> : IRepository<T> where T : class, IEntity
     {
-        public Task<T?> GetByLogin(string login);
-        public Task<string?> GetPasswordByLogin(string login);
+        public Task<IResult<T>> GetByLogin(string login);
+        public Task<IResult<string>> GetPasswordByLogin(string login);
     }
 }

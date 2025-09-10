@@ -25,7 +25,7 @@ namespace CalendarTests
         {
             _client = new RestClient(BaseUrl);
         }
-        [Test, Order(0), Timeout(2000)]
+        [Test, Order(1), Timeout(2000)]
         public async Task Add_ValidUser_ReturnsSuccess()
         {
             // Arrange
@@ -40,15 +40,16 @@ namespace CalendarTests
             request.AddJsonBody(userDto);
 
             // Act
-            var response = await _client.ExecuteAsync<CallbackDto<bool>>(request);
+            var response = await _client.ExecuteAsync<CallbackDto<Guid>>(request);
 
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.Data, Is.Not.Null);
             Assert.That(response.Data.IsDataReceived, Is.True);
-            Assert.That(response.Data.Value, Is.True);
+            Assert.That(response.Data.Value, Is.Not.EqualTo(Guid.Empty));
+            _newUserGuid = response.Data.Value;
         }
-        [Test, Order(1), Timeout(1000)]
+        [Test, Order(2), Timeout(1000)]
         public async Task Add_DuplicateUser_ReturnsError()
         {
             // Arrange
@@ -63,7 +64,7 @@ namespace CalendarTests
             request.AddJsonBody(userDto);
 
             // Act
-            var response = await _client.ExecuteAsync<CallbackDto<bool>>(request);
+            var response = await _client.ExecuteAsync<CallbackDto<Guid>>(request);
 
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -72,7 +73,7 @@ namespace CalendarTests
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
             TestContext.WriteLine(response.Data.ErrorMessage);
         }
-        [Test, Order(2), Timeout(1000)]
+        [Test, Order(3), Timeout(1000)]
         public async Task GetByLogin_ValidLogin_ReturnsUser()
         {
             // Arrange
@@ -91,7 +92,7 @@ namespace CalendarTests
             _newUserGuid = response.Data.Value.Id;
         }
 
-        [Test, Order(3), Timeout(1000)]
+        [Test, Order(4), Timeout(1000)]
         public async Task GetByLogin_InvalidLogin_ReturnsError()
         {
             // Arrange
@@ -108,7 +109,7 @@ namespace CalendarTests
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
             TestContext.WriteLine(response.Data.ErrorMessage);
         }
-        [Test, Order(4), Timeout(1000)]
+        [Test, Order(5), Timeout(1000)]
         public async Task Get_ValidId_ReturnsUser()
         {
             // Arrange
@@ -126,7 +127,7 @@ namespace CalendarTests
             Assert.That(response.Data.Value.Id, Is.EqualTo(userId));
         }
 
-        [Test, Order(5), Timeout(1000)]
+        [Test, Order(6), Timeout(1000)]
         public async Task Get_InvalidId_ReturnsError()
         {
             // Arrange
@@ -143,7 +144,7 @@ namespace CalendarTests
             Assert.That(response.Data.ErrorMessage, Is.Not.Empty);
         }
 
-        [Test, Order(6), Timeout(1000)]
+        [Test, Order(7), Timeout(1000)]
         public async Task Auth_ValidCredentials_ReturnsToken()
         {
             // Arrange
@@ -166,7 +167,7 @@ namespace CalendarTests
             Assert.That(response.Data.Value, Is.Not.Empty);
         }
 
-        [Test, Order(7), Timeout(1000)]
+        [Test, Order(8), Timeout(1000)]
         public async Task Auth_InvalidCredentials_ReturnsError()
         {
             // Arrange
@@ -190,7 +191,7 @@ namespace CalendarTests
             TestContext.WriteLine(response.Data.ErrorMessage);
         }
 
-        [Test, Order(8), Timeout(1000)]
+        [Test, Order(9), Timeout(1000)]
         public async Task Update_ValidUser_ReturnsSuccess()
         {
             // Arrange
@@ -216,7 +217,7 @@ namespace CalendarTests
             Assert.That(response.Data.Value, Is.True);
         }
 
-        [Test, Order(9), Timeout(1000)]
+        [Test, Order(10), Timeout(1000)]
         public async Task Delete_ValidUser_ReturnsSuccess()
         {
             // Arrange
@@ -238,7 +239,7 @@ namespace CalendarTests
             Assert.That(response.Data.Value, Is.True);
         }
 
-        [Test, Order(10), Timeout(1000)]
+        [Test, Order(11), Timeout(1000)]
         public async Task Delete_InvalidUser_ReturnsError()
         {
             // Arrange

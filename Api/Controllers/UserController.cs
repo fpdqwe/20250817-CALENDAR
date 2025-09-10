@@ -50,14 +50,14 @@ namespace Api.Controllers
             return new ActionResult<CallbackDto<string>>(result);
         }
         [HttpPost("add")]
-        public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] UserDto dto)
+        public async Task<ActionResult<CallbackDto<Guid>>> Add([FromBody] UserDto dto)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.AddUser(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
             _logger.LogInformation($"UserController handled \"Add()\" in {sw.ElapsedMilliseconds}ms.");
-            return new ActionResult<CallbackDto<bool>>(result);
+            return new ActionResult<CallbackDto<Guid>>(result);
         }
         [HttpPost("update")]
         public async Task<ActionResult<CallbackDto<bool>>> Update([FromBody] UpdateUserDto dto)

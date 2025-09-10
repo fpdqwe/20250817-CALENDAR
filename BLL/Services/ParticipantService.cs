@@ -25,23 +25,24 @@ namespace BLL.Services
             _logger.LogDebug($"Trying to get participant id: {id}");
             var callback = new CallbackDto<ParticipantDto>();
             var result = await _repository.Get(id);
-            if (result == null)
+            if (result.IsSuccess && result.Result != null)
+            {
+                _logger.LogDebug("Successfuly got participant from db, id: {id}", id);
+                callback.AddObject(result.Result.ToDto());
+            }
+            else
             {
                 var error = $"Failed to get participant, id: {id}";
                 _logger.LogWarning(error);
                 callback.SetErrorMessage(error);
             }
-            else
-            {
-                _logger.LogDebug($"Successfuly got participant from db, id: {id}");
-                callback.AddObject(result.ToDto());
-            }
             return callback;
         }
-        public async Task<CallbackDto<bool>> Add(CreateParticipantDto dto)
+        public async Task<CallbackDto<Guid>> Add(CreateParticipantDto dto)
         {
-            _logger.LogDebug($"Trying to add new participant, id {dto.UserId}");
-            var callback = new CallbackDto<bool>();
+            _logger.LogDebug("Trying to add new participant id: {Id} of event: {EventId}",
+                dto.UserId, dto.EventId);
+            var callback = new CallbackDto<Guid>();
             if (dto == null)
             {
                 var error = "Entity was null";
@@ -50,13 +51,16 @@ namespace BLL.Services
                 return callback;
             }
             var result = await _repository.Add(dto.ToEntity());
-            callback.AddObject(result);
-            _logger.LogDebug($"Add participant id: {dto.UserId} operation result: {result}");
+            if (result.IsSuccess && result.Result != Guid.Empty) callback.AddObject(result.Result);
+            else if (result.Message != null) callback.SetErrorMessage(result.Message);
+            else callback.SetErrorMessage("Failed to add participant");
+            _logger.LogDebug("Add participant id: {UserId} operation result: {Result}",
+                dto.UserId, result.Result);
             return callback;
         }
         public async Task<CallbackDto<bool>> Update(UpdateParticipantDto dto)
         {
-            _logger.LogDebug($"Trying to update participant, id {dto.Id}");
+            _logger.LogDebug("Trying to update participant, id {Id}", dto.Id);
             var callback = new CallbackDto<bool>();
             if (dto == null)
             {
@@ -66,13 +70,16 @@ namespace BLL.Services
                 return callback;
             }
             var result = await _repository.Update(dto.ToEntity());
-            callback.AddObject(result);
-            _logger.LogDebug($"Update participant id: {dto.Id} operation result: {result}");
+            if (result.IsSuccess) callback.AddObject(result.Result);
+            else if (result.Message != null) callback.SetErrorMessage(result.Message);
+            else callback.SetErrorMessage("Failed to update participant");
+            _logger.LogDebug("Update participant id: {Id} operation result: {Result}",
+                dto.Id, result.Result);
             return callback;
         }
         public async Task<CallbackDto<bool>> Delete(DeleteDto dto)
         {
-            _logger.LogDebug($"Trying to delete participant, id {dto.Id}");
+            _logger.LogDebug("Trying to delete participant, id: {Id}", dto.Id);
             var callback = new CallbackDto<bool>();
             if (dto == null)
             {
@@ -82,8 +89,12 @@ namespace BLL.Services
                 return callback;
             }
             var result = await _repository.Delete(dto.ToParticipant());
-            callback.AddObject(result);
-            _logger.LogDebug($"Delete participant id: {dto.Id} operation result: {result}");
+            if (result.IsSuccess) callback.AddObject(result.Result);
+            else if (result.Message != null) callback.SetErrorMessage(result.Message);
+            else callback.SetErrorMessage("Failed to delete participant");
+
+            _logger.LogDebug("Delete participant id: {Id} operation result: {Result}",
+                dto.Id, result.Result);
             return callback;
         }
     }

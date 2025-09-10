@@ -25,14 +25,14 @@ namespace BLL.Services
             _logger = logger;
             _logger.LogDebug($"New instance of {nameof(EventService)} was initialized");
         }
-        public async Task<CallbackDto<bool>> AddUser(UserDto dto)
+        public async Task<CallbackDto<Guid>> AddUser(UserDto dto)
         {
             _logger.LogDebug($"Trying to add new user");
             var entity = dto.ToEntity();
             entity.Password = _hasher.Hash(dto.Password);
-            var result = new CallbackDto<bool>();
+            var result = new CallbackDto<Guid>();
             var record = await _repository.Add(entity);
-            if (record == true) result.AddObject(record);
+            if (record.IsSuccess) result.AddObject(record.Result);
             else result.SetErrorMessage("Failed to create new user");
             return result;
         }
@@ -41,14 +41,19 @@ namespace BLL.Services
             _logger.LogDebug($"Trying to auth user {dto.Login}");
             var callback = new CallbackDto<string>();
             var password = await _repository.GetPasswordByLogin(dto.Login);
-            if (password != null)
+            if (password.IsSuccess && password.Result != null)
             {
-                if (_hasher.Verify(dto.Password, password))
+                if (_hasher.Verify(dto.Password, password.Result))
                 {
                     var user = await _repository.GetByLogin(dto.Login);
-                    if (user != null)
-                        callback.AddObject(_tokenProvider.Generate(user));
-                    else _logger.LogError("User disappeared from database during authentication");
+                    if (user.IsSuccess && user.Result != null)
+                        callback.AddObject(_tokenProvider.Generate(user.Result));
+                    else
+                    {
+                        _logger.LogError("User disappeared from database during authentication");
+                        callback
+                            .SetErrorMessage("Something went wrong during auth. Try again later");
+                    }
                 }
                 else callback.SetErrorMessage("Wrong login or password");
             }
@@ -59,9 +64,10 @@ namespace BLL.Services
         public async Task<CallbackDto<FullUserDto>> GetUser(Guid id)
         {
             var callback = new CallbackDto<FullUserDto>();
-            var user = await _repository.Get(id);
-            if (user != null)
+            var result = await _repository.Get(id);
+            if (result.IsSuccess && result.Result != null)
             {
+                var user = result.Result;
                 callback.AddObject(new FullUserDto()
                 {
                     Id = id,
@@ -82,9 +88,10 @@ namespace BLL.Services
         public async Task<CallbackDto<FullUserDto>> GetUserByLogin(string login)
         {
             var callback = new CallbackDto<FullUserDto>();
-            var user = await _repository.GetByLogin(login);
-            if (user != null)
+            var result = await _repository.GetByLogin(login);
+            if (result.IsSuccess && result.Result != null)
             {
+                var user = result.Result;
                 callback.AddObject(new FullUserDto()
                 {
                     Id = user.Id,
@@ -106,16 +113,30 @@ namespace BLL.Services
         {
             dto.Password = _hasher.Hash(dto.Password);
             var callback = new CallbackDto<bool>();
-            callback.AddObject(await _repository.Update(dto.ToEntity()));
+            var result = await _repository.Update(dto.ToEntity());
+            if (result.IsSuccess)
+            {
+                callback.AddObject(result.Result);
+            }
+            else
+            {
+                if (result.Message != null) callback.SetErrorMessage(result.Message);
+                else callback.SetErrorMessage("Failed to update user");
+            }
             return callback;
         }
         public async Task<CallbackDto<bool>> DeleteUser(DeleteDto dto)
         {
             var callback = new CallbackDto<bool>();
-            callback.AddObject(await _repository.Delete(new User() { Id = dto.Id }));
-            if (callback.Value == false)
+            var result = await _repository.Delete(new User { Id = dto.Id });
+            if (result.IsSuccess)
             {
-                callback.SetErrorMessage("Failed to delete user");
+                callback.AddObject(result.Result);
+            }
+            else
+            {
+                if (result.Message != null) callback.SetErrorMessage(result.Message);
+                else callback.SetErrorMessage("Failed to delete user");
             }
             return callback;
         }

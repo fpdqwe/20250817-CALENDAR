@@ -38,14 +38,14 @@ namespace Api.Controllers
             return new ActionResult<CallbackDto<EventDto>>(result);
         }
         [HttpPost("add")]
-        public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] CreateEventDto dto)
+        public async Task<ActionResult<CallbackDto<Guid>>> Add([FromBody] CreateEventDto dto)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.Add(dto);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
             _logger.LogInformation($"EventController handled \"Add()\" in {sw.ElapsedMilliseconds}ms.");
-            return new ActionResult<CallbackDto<bool>>(result);
+            return new ActionResult<CallbackDto<Guid>>(result);
         }
         [HttpPost("update")]
         public async Task<ActionResult<CallbackDto<bool>>> Update([FromBody] UpdateEventDto dto)

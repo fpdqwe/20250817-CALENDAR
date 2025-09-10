@@ -28,14 +28,14 @@ namespace Api.Controllers
             return new ActionResult<CallbackDto<ParticipantDto>>(result);
         }
         [HttpPost("add")]
-        public async Task<ActionResult<CallbackDto<bool>>> Add([FromBody] CreateParticipantDto participant)
+        public async Task<ActionResult<CallbackDto<Guid>>> Add([FromBody] CreateParticipantDto participant)
         {
             var sw = Stopwatch.StartNew();
             var result = await _service.Add(participant);
             if (result == null) throw new NullReferenceException(nameof(result));
             sw.Stop();
             _logger.LogInformation($"EventParticipantController handled \"Add()\" in {sw.ElapsedMilliseconds}");
-            return new ActionResult<CallbackDto<bool>>(result);
+            return new ActionResult<CallbackDto<Guid>>(result);
         }
         [HttpPost("update")]
         public async Task<ActionResult<CallbackDto<bool>>> Update([FromBody] UpdateParticipantDto participant)

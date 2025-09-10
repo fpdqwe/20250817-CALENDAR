@@ -1,9 +1,9 @@
 ﻿namespace DataAccess.Abstractions
 {
-    public interface IDataAccessResult<T>
+    public interface IResult<T>
     {
         public bool IsSuccess { get; }
-        public string? ExceptionMessage { get; }
+        public string? Message { get; }
         public T? Result { get; }
         public long Duration { get; }
     }

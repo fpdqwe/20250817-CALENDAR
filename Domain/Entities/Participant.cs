@@ -8,6 +8,8 @@ namespace Domain.Entities
         public string Role { get; set; } = "Owner";
         public int WarningTimeOffset { get; set; } = 0;
         public string? Color { get; set; }
+        public Guid EventId { get; set; }
+        public Guid UserId { get; set; }
         public Event? Event { get; set; }
         public User? User { get; set; }
     }

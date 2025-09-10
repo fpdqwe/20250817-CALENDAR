@@ -20,24 +20,24 @@ namespace DataAccess.Abstractions
         /// </summary>
         /// <param name="entityId">Requested entity id.</param>
         /// <returns>Repo entity.</returns>
-        Task<T?> Get(Guid entityId);
+        Task<IResult<T>> Get(Guid entityId);
         /// <summary>
         /// Adds entity.
         /// </summary>
         /// <param name="entity">Entity to add.</param>
         /// <returns>Success status. Should be false in error cases.</returns>
-        Task<bool> Add(T entity);
+        Task<IResult<Guid>> Add(T entity);
         /// <summary>
         /// Updates existing entity.
         /// </summary>
         /// <param name="entity">Entity to update.</param>
         /// <returns>Success status. Should be false in error cases.</returns>
-        Task<bool> Update(T entity);
+        Task<IResult<bool>> Update(T entity);
         /// <summary>
         /// Deletes existing entity.
         /// </summary>
         /// <param name="entity">Entity to delete.</param>
         /// <returns>Success status. Should be false in error cases.</returns>
-        Task<bool> Delete(T entity);
+        Task<IResult<bool>> Delete(T entity);
     }
 }

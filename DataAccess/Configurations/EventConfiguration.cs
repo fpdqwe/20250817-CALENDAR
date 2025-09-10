@@ -20,7 +20,14 @@ namespace DataAccess.Configurations
             builder.Property(x => x.Ico).IsRequired(false);
             builder.Property(x => x.IterationTime).IsRequired(true)
                 .HasDefaultValue(IterationTime.Single);
-            builder.HasMany(x => x.Participants).WithOne(x => x.Event);
+            builder.HasOne(x => x.Creator)
+                .WithMany()
+                .HasForeignKey(x => x.CreatorId)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(x => x.Participants)
+                .WithOne(x => x.Event)
+                .HasForeignKey(x => x.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -16,5 +16,6 @@ namespace Domain.Entities
         public IterationTime IterationTime { get; set; }
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
         public List<Participant>? Participants { get; set; }
+        public User Creator { get; set; }
     }
 }

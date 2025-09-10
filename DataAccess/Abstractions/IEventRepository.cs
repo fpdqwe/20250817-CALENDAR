@@ -12,6 +12,6 @@ namespace DataAccess.Abstractions
     /// <typeparam name="T">The main entity(Event) that the repository works with.</typeparam>
     public interface IEventRepository<T> : IRepository<T> where T : class, IEntity
     {
-        Task<List<Event>> GetByUserId(Guid userId, int year);
+        Task<IResult<ICollection<Event>>> GetByUserId(Guid userId, int year);
     }
 }

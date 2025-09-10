@@ -9,6 +9,6 @@ namespace BLL.Abstractions
         public Task<CallbackDto<FullUserDto>> GetUserByLogin(string login);
         public Task<CallbackDto<FullUserDto>> GetUser(Guid id);
         public Task<CallbackDto<string>> AuthUser(UserDto dto);
-        public Task<CallbackDto<bool>> AddUser(UserDto dto);
+        public Task<CallbackDto<Guid>> AddUser(UserDto dto);
     }
 }

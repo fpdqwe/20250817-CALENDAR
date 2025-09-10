@@ -85,12 +85,13 @@ namespace BLL.Extensions
         {
             var owner = new Participant()
             {
-                Id = dto.CreatorId,
+                Id = Guid.NewGuid(),
                 Role = "Owner",
                 User = new User() { Id = dto.CreatorId }
             };
             var result = new Event
             {
+                CreatorId = dto.CreatorId,
                 Id = Guid.NewGuid(),
                 Date = dto.Date,
                 Duration = dto.Duration,
